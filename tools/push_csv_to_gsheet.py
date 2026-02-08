@@ -61,9 +61,34 @@ def main():
 
     # append mode
     existing = ws.get_all_values()
+
+    def norm_row(r):
+        # normalize row for comparison: trim whitespace, drop trailing empties
+        r2 = [c.strip() for c in r]
+        while r2 and r2[-1] == "":
+            r2.pop()
+        return r2
+
+    header_norm = norm_row(header)
+
     if not existing:
         ws.append_row(header)
         print(f"Wrote header to empty tab '{args.tab}'.")
+    else:
+        first = existing[0] if existing else []
+        first_norm = norm_row(first)
+
+        if first_norm == header_norm:
+            # header already present; do nothing
+            pass
+        elif all(c.strip() == "" for c in first):
+            # row 1 exists but is blank -> write header into A1
+            ws.update("A1", [header])
+            print(f"Wrote header into A1 for tab '{args.tab}'.")
+        else:
+            # row 1 has data -> insert header row at top
+            ws.insert_row(header, 1)
+            print(f"Inserted header row at top of tab '{args.tab}'.")
 
     if data:
         ws.append_rows(data, value_input_option="RAW")
