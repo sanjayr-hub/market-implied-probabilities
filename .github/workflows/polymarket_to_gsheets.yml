@@ -33,6 +33,11 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
+          if [ ! -f data/polymarket_latest.csv ]; then
+            echo "data/polymarket_latest.csv not found — skipping Google Sheets push."
+            exit 0
+          fi
+
           python tools/push_csv_to_gsheet.py \
             --csv data/polymarket_latest.csv \
             --sheet_id "${{ secrets.GOOGLE_SHEET_ID }}" \
